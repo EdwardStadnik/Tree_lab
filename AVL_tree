@@ -5,64 +5,81 @@
 
 using namespace std;
 
+
+
 class AVL {
-	struct Node;
-	Node* root;
-private:
-	unsigned int height(Node* p);
-	void recalc_h(Node*);
-	void insert(Node*, int);
-	void erase(Node*, int);
-	bool find(Node*, int);
-	Node* left_rotate(Node*);
-	Node* right_rotate(Node*);
+	struct Node {
+		int key;
+		unsigned int h;
+		Node* left, * right;
+		int dif = height(left) - height(right);
+		Node() { key; h; left = right = NULL; dif; }
+	};
+	Node main_root;
 public:
+	Node* root;
+	AVL();
+	~AVL();
 	void insert(int x) {
-		insert(root, x);
+		root = insert(root, x);
 	}
-	void erase(Node*, int x) {
-		erase(root, x);
+	void erase(int x) {
+		root = erase(root, x);
 	}
 	bool find(int x) {
 		find(root, x);
 	}
+private:
+	void Clear(Node*);
+	Node* balance(Node*);
+	Node* newNode(int);
+	unsigned int height(Node*);
+	void recalc_h(Node*);
+	Node* insert(Node*, int);
+	Node* get_min(Node*);
+	Node* removemin(Node*);
+	Node* erase(Node*, int);
+	bool find(Node*, int);
+	Node* left_rotate(Node*);
+	Node* right_rotate(Node*);
 };
 
-struct Node {
-	int key;
-	unsigned int h;
-	Node* left, * right;
-	int dif = height(left) - height(right);
-	Node() { key; h; left = right = NULL; dif; }
-};
-
-void newNode(int key)
+AVL::Node* AVL::newNode(int key)
 {
-	Node* node = new Node();
+	AVL::Node* node = new AVL::Node();
 	node->key = key;
 	node->left = NULL;
 	node->right = NULL;
 	node->h = 1;
+	return node;
 }
 
-unsigned int height(Node* root) {
-	if (root) {
-		return root->h;
+unsigned int AVL::height(AVL::Node* p) {
+	if (p) {
+		return p->h;
 	}
 	return 0;
 }
 
-void recalc_h(Node* root) {
-	if (!root) {
+void AVL::recalc_h(AVL::Node* p) {
+	if (!p) {
 		return;
 	}
-	if (root) {
-		root->h = max(height(root->left), height(root->right)) + 1;
+	if (p) {
+		p->h = max(height(p->left), height(p->right)) + 1;
 	}
 }
 
-Node* right_rotate(Node* p) {
-	Node* q = p->left;
+AVL::AVL() {
+	root = 0;
+}
+
+AVL::~AVL() {
+	Clear(root);
+}
+
+AVL::Node* AVL::right_rotate(AVL::Node* p) {
+	AVL::Node* q = p->left;
 	p->left = q->right;
 	q->right = p;
 	recalc_h(p);
@@ -70,8 +87,8 @@ Node* right_rotate(Node* p) {
 	return q;
 }
 
-Node* left_rotate(Node* p) {
-	Node* q = p->right;
+AVL::Node* AVL::left_rotate(AVL::Node* p) {
+	AVL::Node* q = p->right;
 	p->right = q->left;
 	q->left = p;
 	recalc_h(p);
@@ -79,81 +96,99 @@ Node* left_rotate(Node* p) {
 	return q;
 }
 
-Node* fix_h(Node* root) {
-	if (!root) {
+AVL::Node* AVL::balance(AVL::Node* p) {
+	if (!p) {
 		return NULL;
 	}
-	recalc_h(root);
-	if (root->dif >= 2) {
-		if (height(root->left->right) > height(root->left->left)) {
-			root->left = left_rotate(root->left);
+	recalc_h(p);
+	if (p->dif > 1) {
+		if (p->left->dif < 0) {
+			p->left = left_rotate(p->left);
 		}
-		root = right_rotate(root);
+		p = right_rotate(p);
 	}
-	if (root->dif <= -2) {
-		if (height(root->right->left) > height(root->right->right)) {
-			root->right = right_rotate(root->right);
+	if (p->dif < -1) {
+		if (p->right->dif > 0) {
+			p->right = right_rotate(p->right);
 		}
-		root = left_rotate(root);
+		p = left_rotate(p);
 	}
-	return root;
+	return p;
 }
 
-void insert(Node* root, int x) {
-	if (root->key == x) {
-		return;
+AVL::Node* AVL::insert(AVL::Node* p, int x) {
+	if (!p) {
+		return newNode(x);
 	}
-	if (root->key < x) {
-		insert(root->right, x);
+	if (p->key < x) {
+		p->right = insert(p->right, x);
 	}
-	if (root->key > x) {
-		insert(root->left, x);
+	if (p->key > x) {
+		p->left = insert(p->left, x);
 	}
-	recalc_h(root);
-	root = fix_h(root);
-	newNode(x);
+	return balance(p);
 }
 
-Node* get_min(Node* root) {
-	if (root->left) {
-		return get_min(root->left);
+AVL::Node* AVL::get_min(AVL::Node* p) {
+	if (p->left) {
+		return get_min(p->left);
 	}
-	return root;
+	return p;
 }
 
-void erase(Node* root, int key) {
-	if (!root) {
-		return;
-	}
-	if (root->key < key) {
-	erase(root->right, key);
-		root = fix_h(root);
-	}
-	if (root->key > key) {
-		erase(root->left, key);
-		root = fix_h(root);
-	}
-	if (!root->right) {
-		root = root->left;
-		fix_h(root);
-	}
-	Node* m = get_min(root->right);
-	root->key = m->key;
-	root->right = erase(root->right, m->key);
-	root = fix_h(root);
-	return root;
+AVL::Node* AVL::removemin(AVL::Node* p) 
+{
+	if (p->left == 0)
+		return p->right;
+	p->left = removemin(p->left);
+	return balance(p);
 }
 
+AVL::Node* AVL::erase(AVL::Node* p, int key) {
+	if (!p) {
+		return NULL;
+	}
+	if (p->key < key) {
+	p->right = erase(p->right, key);
+	}
+	if (p->key > key) {
+	p->left = erase(p->left, key);
+	}
+	else {
+		AVL::Node* l = p->left;
+		AVL::Node* r = p->right;
+		delete p;
+		if (!r) {
+			return l;
+		}
+		else {
+			AVL::Node* min = get_min(r);
+			min->right = removemin(r);
+			min->left = l;
+			return balance(min);
+		}
+	}
+	return balance(p);
+}
 
-bool find(Node* root, int key) {
-	if (!root) {
+bool AVL::find(AVL::Node* p, int key) {
+	if (!p) {
 		return false;
 	}
-	if (root->key > key) {
-		return find(root->left, key);
+	if (p->key > key) {
+		return find(p->left, key);
 	}
-	if (root->key < key) {
-		return find(root->right, key);
+	if (p->key < key) {
+		return find(p->right, key);
 	}
 	return true;
+}
+
+void AVL::Clear(AVL::Node* node) {
+	if (!node) {
+		return;
+	};
+	Clear(node->left);
+	Clear(node->right);
+	delete node;
 }
