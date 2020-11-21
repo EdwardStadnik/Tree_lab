@@ -1,0 +1,159 @@
+#include <algorithm>
+#include <new>
+#include <iostream>
+#include <stdlib.h>
+
+using namespace std;
+
+class AVL {
+	struct Node;
+	Node* root;
+private:
+	unsigned int height(Node* p);
+	void recalc_h(Node*);
+	void insert(Node*, int);
+	void erase(Node*, int);
+	bool find(Node*, int);
+	Node* left_rotate(Node*);
+	Node* right_rotate(Node*);
+public:
+	void insert(int x) {
+		insert(root, x);
+	}
+	void erase(Node*, int x) {
+		erase(root, x);
+	}
+	bool find(int x) {
+		find(root, x);
+	}
+};
+
+struct Node {
+	int key;
+	unsigned int h;
+	Node* left, * right;
+	int dif = height(left) - height(right);
+	Node() { key; h; left = right = NULL; dif; }
+};
+
+void newNode(int key)
+{
+	Node* node = new Node();
+	node->key = key;
+	node->left = NULL;
+	node->right = NULL;
+	node->h = 1;
+}
+
+unsigned int height(Node* root) {
+	if (root) {
+		return root->h;
+	}
+	return 0;
+}
+
+void recalc_h(Node* root) {
+	if (!root) {
+		return;
+	}
+	if (root) {
+		root->h = max(height(root->left), height(root->right)) + 1;
+	}
+}
+
+Node* right_rotate(Node* p) {
+	Node* q = p->left;
+	p->left = q->right;
+	q->right = p;
+	recalc_h(p);
+	recalc_h(q);
+	return q;
+}
+
+Node* left_rotate(Node* p) {
+	Node* q = p->right;
+	p->right = q->left;
+	q->left = p;
+	recalc_h(p);
+	recalc_h(q);
+	return q;
+}
+
+Node* fix_h(Node* root) {
+	if (!root) {
+		return NULL;
+	}
+	recalc_h(root);
+	if (root->dif >= 2) {
+		if (height(root->left->right) > height(root->left->left)) {
+			root->left = left_rotate(root->left);
+		}
+		root = right_rotate(root);
+	}
+	if (root->dif <= -2) {
+		if (height(root->right->left) > height(root->right->right)) {
+			root->right = right_rotate(root->right);
+		}
+		root = left_rotate(root);
+	}
+	return root;
+}
+
+void insert(Node* root, int x) {
+	if (root->key == x) {
+		return;
+	}
+	if (root->key < x) {
+		insert(root->right, x);
+	}
+	if (root->key > x) {
+		insert(root->left, x);
+	}
+	recalc_h(root);
+	root = fix_h(root);
+	newNode(x);
+}
+
+Node* get_min(Node* root) {
+	if (root->left) {
+		return get_min(root->left);
+	}
+	return root;
+}
+
+void erase(Node* root, int key) {
+	if (!root) {
+		return;
+	}
+	if (root->key < key) {
+	erase(root->right, key);
+		root = fix_h(root);
+	}
+	if (root->key > key) {
+		erase(root->left, key);
+		root = fix_h(root);
+	}
+	if (!root->right) {
+		root = root->left;
+		fix_h(root);
+	}
+	Node* m = get_min(root->right);
+	root->key = m->key;
+	root->right = erase(root->right, m->key);
+	root = fix_h(root);
+	return root;
+}
+
+
+bool find(Node* root, int key) {
+	if (!root) {
+		return false;
+	}
+	if (root->key > key) {
+		return find(root->left, key);
+	}
+	if (root->key < key) {
+		return find(root->right, key);
+	}
+	return true;
+}
