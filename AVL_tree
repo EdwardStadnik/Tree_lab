@@ -1,21 +1,12 @@
 #include <algorithm>
-#include <new>
 #include <iostream>
-#include <stdlib.h>
-
-using namespace std;
-
-
 
 class AVL {
 	struct Node {
 		int key;
 		unsigned int h;
 		Node* left, * right;
-		int dif = height(left) - height(right);
-		Node() { key; h; left = right = NULL; dif; }
 	};
-	Node main_root;
 public:
 	Node* root;
 	AVL();
@@ -39,7 +30,7 @@ private:
 	Node* get_min(Node*);
 	Node* removemin(Node*);
 	Node* erase(Node*, int);
-	bool find(Node*, int);
+	Node* find(Node*, int);
 	Node* left_rotate(Node*);
 	Node* right_rotate(Node*);
 };
@@ -66,12 +57,12 @@ void AVL::recalc_h(AVL::Node* p) {
 		return;
 	}
 	if (p) {
-		p->h = max(height(p->left), height(p->right)) + 1;
+		p->h = std::max(height(p->left), height(p->right)) + 1;
 	}
 }
 
 AVL::AVL() {
-	root = 0;
+	root = NULL;
 }
 
 AVL::~AVL() {
@@ -101,14 +92,14 @@ AVL::Node* AVL::balance(AVL::Node* p) {
 		return NULL;
 	}
 	recalc_h(p);
-	if (p->dif > 1) {
-		if (p->left->dif < 0) {
+	if ((height(p->left) - height(p->right)) > 1) {
+		if ((height(p->left->left) - height(p->left->right)) < 0) {
 			p->left = left_rotate(p->left);
 		}
 		p = right_rotate(p);
 	}
-	if (p->dif < -1) {
-		if (p->right->dif > 0) {
+	if ((height(p->left) - height(p->right)) < -1) {
+		if ((height(p->right->left) - height(p->right->right)) > 0) {
 			p->right = right_rotate(p->right);
 		}
 		p = left_rotate(p);
@@ -171,7 +162,7 @@ AVL::Node* AVL::erase(AVL::Node* p, int key) {
 	return balance(p);
 }
 
-bool AVL::find(AVL::Node* p, int key) {
+AVL::Node* AVL::find(AVL::Node* p, int key) {
 	if (!p) {
 		return false;
 	}
@@ -181,7 +172,7 @@ bool AVL::find(AVL::Node* p, int key) {
 	if (p->key < key) {
 		return find(p->right, key);
 	}
-	return true;
+	return p;
 }
 
 void AVL::Clear(AVL::Node* node) {
