@@ -10,7 +10,8 @@
 // -----------------------------------------------------------------------------------------------
 
 class RB{
-    struct node{
+    public:
+		struct node{
 		node *left;
 		node *right;
 		node *parent;  
@@ -22,26 +23,27 @@ class RB{
 	int nodes_count; 	// число всех вершин 
 	
 	private:
-	    node *New_Node(int value);	        // выделение новой вершины
-	    void Erase_Node(node*);           	// удаление данной вершины
-		void Clear(node *)					//рекурсиный снос дерева через подкорни 
-	    static  node *Rotate_left(node*);  	// левое вращение в данной вершине
-				node *Rotate_right(node*); 	// правое вращение в данной вершине 
+	    node *new_node(int value);	        // выделение новой вершины
+	    void erase_node(node*);           	// удаление данной вершины
+		void clear(node *);					//рекурсиный снос дерева через подкорни 
+	    static  node *rotate_left(node*);  	// левое вращение в данной вершине
+				node *rotate_right(node*); 	// правое вращение в данной вершине 
 	    
-		bool Insert(int, node**);     		// вставка элемента из поддерева с таким корнем
-	    bool Erase(int, node**);         	// удаление элемента из поддерева с таким корнем
-	    bool GetMin(node**,node**);   		// нахождение и удаление максимального узла поддерева
+		bool insert(int, node**);     		// вставка элемента из поддерева с таким корнем
+	    bool erase(int, node**);         	// удаление элемента из поддерева с таким корнем
+	    bool getmin(node**,node**);   		// нахождение и удаление максимального узла поддерева
 		
-		void Balance_Insert(node**);      	// баланисровка после вставки
-	    bool Balance_Erase_left(node**);    // балансировка левого вращения
-	    bool Balance_Erase_right(node**);   // балансировка правого вращения
+		void balance_insert(node**);      	// баланисровка после вставки
+	    bool balance_erase_left(node**);    // балансировка левого вращения
+	    bool balance_erase_right(node**);   // балансировка правого вращения
 	
 	public:
 	    RB();				// создание пустого древа
 	    ~RB(); 				// снос дерева		
-	    node Find(int);    	// поиск вершины с данным значением - выдает указатель на нее
-	    void Insert(int);  	// вставка данного значения в дерево - ничего не выдает
-	    void Erase(int);    // удаление вершины с данным значением - ничего не выдает
+	    node* find(int);    	// поиск вершины с данным значением - выдает указатель на нее
+	    void insert(int);  	// вставка данного значения в дерево - ничего не выдает
+	    void erase(int);    // удаление вершины с данным значением - ничего не выдает
+	    void clear();		// полный снос дерева
 	    //void Show();      // демонстрация древа как массива
 };
 
@@ -50,9 +52,9 @@ class RB{
 // -----------------------------------------------------------------------------------------------
 
 // выделение новой вершины
-RB::node *RB::New_Node(int value) { 
+RB::node *RB::new_node(int value) { 
     nodes_count++;
-    node *node = new node;
+    node* node = new RB::node;
     node->value = value;
     node->left = 0;
 	node->right = 0;
@@ -61,69 +63,69 @@ RB::node *RB::New_Node(int value) {
 }
 
 //удаление данной вершины
-void RB::Erase_Node(node *node) { //удаление данной вершины
+void RB::erase_node(node *node) { //удаление данной вершины
     nodes_count--;
     delete node;
 }
 
 //рекурсиный снос дерева через подкорни
-void RB::Clear(node *node) { 
+void RB::clear(node *node) { 
     if (!node) {
 		return;
 	};	 // если вдруг добрались до листьев - ничего не делай
-    Clear(node->left);
-    Clear(node->right);
-    Erase_Node(node);
+    clear(node->left);
+    clear(node->right);
+    erase_node(node);
 }
 
 // левое вращение в данной вершине
-RB::node *RB::Rotate_left(node *node) {
-    node *left = node -> left;
-    node *local = left -> right;
+RB::node *RB::rotate_left(node* node) {
+    RB::node *right = node -> right;
+    RB::node *local = right -> left;
     right -> left = node;
     node -> right = local;
     return right;
 }
 
 // правое вращение в данной вершине
-RB::node *RB::Rotate_right(node *node) {
-    node *right = node -> right;
-    node *local = right -> left;
+RB::node *RB::rotate_right(node *node) {
+    RB::node *left = node -> left;
+    RB::node *local = left -> right;
     left -> right = node;
-    node -> = local;
-    return right;
+    node -> left = local;
+    return left;
 }
 
 // вставка элемента из поддерева с таким корнем
-bool RB::Insert(int value, node **root) {
+bool RB::insert(int value, node **root) {
     node *node = *root;
     if (!node) {
-		*root = NewNode(value);
+		*root = new_node(value);
 	} else {
         if (value == node->value) {
 			return true;
 		}
-        if (Insert(value, height, value<node->value?&node->p1:&node->p2)){ //!!!
+        if (insert(value, value<node->value?&node->left:&node->right)){ //!!!
 			return true;
 		}
-        Balance_Insert(root);
+        balance_insert(root);
     }
     return false;
 }
 
 // удаление элемента из поддерева с таким корнем
-bool RB::Erase(int value, node **root) {
+bool RB::erase(int value, node **root) {
     node *t,*node=*root;
     if (!node) {
 		return false;
 	}
     if (node->value<value) {
-        if (Erase(value, &node->right)) {
-			return Balance_Erase_right(root);
+        if (erase(value, &node->right)) {
+			return balance_erase_right(root);
 		}
     } else if(node->value>value) {
-        if (Erase(value, &node->left)){
-			return Balance_Erase_left(root);
+        if (erase(value, &node->left)){
+			return balance_erase_left(root);
 		}
     } else {
         bool res;
@@ -131,26 +133,26 @@ bool RB::Erase(int value, node **root) {
             *root = node->left;
             res =! node->color;
         } else {
-            res = GetMin(&node->right,root);
+            res = getmin(&node->right,root);
             t = *root;
             t->color = node->color;
             t->left = node->left;
             t->right = node->right;
             if (res) {
-				res = Balance_Erase_right(root);
+				res = balance_erase_right(root);
 			}
         }
-        Erase_Node(node);
+        erase_node(node);
         return res;
     }
     return 0;
 }
 
-bool RB::GetMin(node **root, node **res) {
-    node_st *node=*root;
+bool RB::getmin(node **root, node **res) {
+    node *node = *root;
     if (node->left) {
-        if (GetMin(&node->left,res)) {
-			return BalanceRemove_left(root);
+        if (getmin(&node->left,res)) {
+			return balance_erase_left(root);
 		}
     } else {
         *root = node->right;
@@ -164,7 +166,7 @@ bool RB::GetMin(node **root, node **res) {
 // внутренний функционал: отлабка и стабилизация дерева
 // -----------------------------------------------------------------------------------------------
 
-void RB::Balance_Insert(node **root) { // балансировка дерева после ввода
+void RB::balance_insert(node **root) { // балансировка дерева после ввода
     node *left, *right, *left_color,*right_color;
     node *node = *root;
     if (node->color) {
@@ -178,7 +180,7 @@ void RB::Balance_Insert(node **root) { // балансировка дерева после ввода
     if (left and left->color) {
         right_color = left->right;
         if (right_color and right_color->color) {
-        	left = node->left = Rotate_left(left);        	
+        	left = node->left = rotate_left(left);        	
 		}
 		right_color = left->left;
         if (left_color and left_color->color) {
@@ -190,7 +192,7 @@ void RB::Balance_Insert(node **root) { // балансировка дерева после ввода
                 right->color = false;
                 return;
             }
-            *root = Rotate_right(node);
+            *root = rotate_right(node);
             return;
         }
     }
@@ -198,7 +200,7 @@ void RB::Balance_Insert(node **root) { // балансировка дерева после ввода
     if (right and right->color) {
         left_color = right->left;
 		if (left_color and left_color->color) {
-			right = node->right = Rotate_right(right);
+			right = node->right = rotate_right(right);
 		}
         right_color = right->right;
         if (right_color and right_color->color) {
@@ -210,16 +212,16 @@ void RB::Balance_Insert(node **root) { // балансировка дерева после ввода
                 left->color = false;
                 return;
             }
-            *root = Rotate_left(node);
+            *root = rotate_left(node);
             return;
         }
     }
 }
 
-bool RB::Balance_Erase_left(node **root) {
-    node *node = *root;
-    node *left = node->left;
-    node *right = node->right;
+bool RB::balance_erase_left(node **root) {
+    RB::node *node = *root;
+    RB::node *left = node->left;
+    RB::node *right = node->right;
     if (left and left->color) {
         left->color = false;
 		return false;
@@ -227,15 +229,15 @@ bool RB::Balance_Erase_left(node **root) {
     if (right and right->color) { // слцчай 1
         node->color=true;
         right->color=false;
-        node = *root = Rotate_left(node);
-        if (Balance_Erase_left(&node->left)) {
+        node = *root = rotate_left(node);
+        if (balance_erase_left(&node->left)) {
 			node->left->color = false;
 		}
         return false;
     }
     unsigned int mask = 0;
-    node *rl=->p1;
-    node *rr=p2->p2;
+    RB::node *rl = right->left;
+    RB::node *rr = right->right;
     if (rl and rl->color) {
 		mask|=1;
 	}
@@ -250,21 +252,21 @@ bool RB::Balance_Erase_left(node **root) {
         
 		case 2:     // случай 3 - if (p22 and p22->red)
             right->color = node->color;
-            p22->color = node->color = false;
-            *root = Rotate_right(node);	
+            rr->color = node->color = false;
+            *root = rotate_right(node);	
         case 3:     // случай 4 - if (p21 and p21->red)
             right->color = true;
             rl->color = false;
-            right = node->right = Rotate_left(right);
+            right = node->right = rotate_left(right);
             rl = right->right;
     }
     return false;
 }
 
-bool RB::Balance_Erase_right(node **root) {
-    node *node = *root;
-    node *left = node->left;
-    node *right = node->right;
+bool RB::balance_erase_right(node **root) {
+    RB::node *node = *root;
+    RB::node *left = node->left;
+    RB::node *right = node->right;
     if (right and right->color) {
 		right->color=false;
 		return false;
@@ -272,15 +274,15 @@ bool RB::Balance_Erase_right(node **root) {
     if (left and left->color) { // слцчай 1
         node->color = true;
         left->color = false;
-        node = *root = Rotate_right(node);
-        if (BalanceRemove2(&node->right)){
+        node = *root = rotate_right(node);
+        if (balance_erase_right(&node->right)){
 			node->right->color = false;
 		}
         return false;
     }
     unsigned int mask=0;
-    node *ll = left->left;
-    node *lr = left->right;
+    RB::node *ll = left->left;
+    RB::node *lr = left->right;
     if (ll and ll->color){
 		mask|=1;
 	}
@@ -294,13 +296,13 @@ bool RB::Balance_Erase_right(node **root) {
         case 1:     // слцчай 4 - if(ll and ll->color)
             left->color = node->color;
             ll->color = node->color = false;
-            *root = Rotate_right(node);
+            *root = rotate_right(node);
     	case 2:
         	
         case 3:     // слцчай 3 - if(lr and lr->color)
             left->color = true;
             lr->color = false;
-            left = node->left = Rotate_left(p1);
+            left = node->left = rotate_left(left);
             ll = left->left;
     }
     return false;
@@ -318,36 +320,35 @@ RB::RB() {
 
 // снос дерева
 RB::~RB() {
-    Clear(root); 
+    clear(root); 
 }
 
 // поиск вершины с данным значением - выдает указатель на нее
-int RB::Find(int value) {
-    node *node = root;
-    while(node) {
+RB::node find(int value) {
+    RB::node *node = *root;
+    while (node) {
         if (node->value == value)
-		return true;
+		return node;
         node = node->value>value?node->left:node->right;
     }
-    return *node;
 }
 
 // вставка данного значения в дерево - ничего не выдает
-void RB::Insert(int value) {
-    Insert(value, &root);
+void RB::insert(int value) {
+    insert(value, &root);
     if (root) {
 		root->color=false;
 	}
 }
 
 // удаление вершины с данным значением - ничего не выдает
-void RB::Erase(int value) {
-    Erase(&root,value);
+void RB::erase(int value) {
+    erase(value, &root);
 }
 
 // снос дерева
-void RB::Clear() {
-    Clear(root);
+void RB::clear() {
+    clear(root);
     root = 0;
 }
 
