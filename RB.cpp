@@ -12,23 +12,25 @@
 class RB{
     public:
 		struct node{
-		node *left;
-		node *right;
-		node *parent;  
-		int value;
-		bool color; // true - красная, false - черная 
-		int height;
-	};
+			node *left;
+			node *right;
+			node *parent;  
+			int value;
+			bool color; // true - красная, false - черная 
+			int height;
+		};
 	node *root;    		// корень
 	int nodes_count; 	// число всех вершин 
 	
 	private:
 	    node *new_node(int value);	        // выделение новой вершины
 	    void erase_node(node*);           	// удаление данной вершины
-		void clear(node *);					//рекурсиный снос дерева через подкорни 
+		void clear(node *);					// рекурсиный снос дерева через подкорни 
 	    static  node *rotate_left(node*);  	// левое вращение в данной вершине
-				node *rotate_right(node*); 	// правое вращение в данной вершине 
+				node *rotate_right(node*); 	// правое вращение в данной вершине
+		void show(node*);			    // рекурсивный вывод на экран дерева
 	    
+		node* find(node*, int);				// поиск элемента с таким значением в поддереве с таким корнем
 		bool insert(int, node**);     		// вставка элемента из поддерева с таким корнем
 	    bool erase(int, node**);         	// удаление элемента из поддерева с таким корнем
 	    bool getmin(node**,node**);   		// нахождение и удаление максимального узла поддерева
@@ -40,11 +42,11 @@ class RB{
 	public:
 	    RB();				// создание пустого древа
 	    ~RB(); 				// снос дерева		
-	    node* find(int);    	// поиск вершины с данным значением - выдает указатель на нее
+	    node* find(int);    // поиск вершины с данным значением - выдает указатель на нее
 	    void insert(int);  	// вставка данного значения в дерево - ничего не выдает
 	    void erase(int);    // удаление вершины с данным значением - ничего не выдает
 	    void clear();		// полный снос дерева
-	    //void Show();      // демонстрация древа как массива
+	    void show();      	// демонстрация древа как массива
 };
 
 // -----------------------------------------------------------------------------------------------
@@ -96,6 +98,32 @@ RB::node *RB::rotate_right(node *node) {
     return left;
 }
 
+// рекурсивный вывод на экран дерева
+void RB::show(node* node)	{
+	if (!node) {
+		return;
+	}
+	bool color = node->color;
+	if (color){
+		std::cout << " - " << node->value << " red " << " - ";
+	}
+	if (!color){
+		std::cout << " - " << node->value << " black " << " - ";
+	}
+	show(node->left);
+	show(node->right);
+}
+
+// поиск элемента с таким значением в поддереве с таким корнем
+node* RB::find(node* node, int value) {
+    while (node) {
+        if (node->value == value) {
+			return *node;
+        	node = node->value>value?node->left:node->right;
+    	}
+    }
+}
+
 // вставка элемента из поддерева с таким корнем
 bool RB::insert(int value, node **root) {
     node *node = *root;
@@ -105,7 +133,7 @@ bool RB::insert(int value, node **root) {
         if (value == node->value) {
 			return true;
 		}
-        if (insert(value, value<node->value?&node->left:&node->right)){ //!!!
+        if (insert(value, value<node->value? &node->left: &node->right)){ //!!!
 			return true;
 		}
         balance_insert(root);
@@ -325,12 +353,7 @@ RB::~RB() {
 
 // поиск вершины с данным значением - выдает указатель на нее
 RB::node find(int value) {
-    RB::node *node = *root;
-    while (node) {
-        if (node->value == value)
-		return node;
-        node = node->value>value?node->left:node->right;
-    }
+    return find(root, value);
 }
 
 // вставка данного значения в дерево - ничего не выдает
@@ -352,3 +375,8 @@ void RB::clear() {
     root = 0;
 }
 
+
+// демонстрация древа как массива
+void RB::show() {
+    show(root);
+}
