@@ -127,7 +127,7 @@ AVL::Node* AVL::get_min(AVL::Node* p) {
 	return p;
 }
 
-AVL::Node* AVL::removemin(AVL::Node* p) 
+AVL::Node* AVL::removemin(AVL::Node* p)
 {
 	if (p->left == 0)
 		return p->right;
@@ -140,10 +140,10 @@ AVL::Node* AVL::erase(AVL::Node* p, int key) {
 		return NULL;
 	}
 	if (p->key < key) {
-	p->right = erase(p->right, key);
+		p->right = erase(p->right, key);
 	}
 	if (p->key > key) {
-	p->left = erase(p->left, key);
+		p->left = erase(p->left, key);
 	}
 	else {
 		AVL::Node* l = p->left;
@@ -160,6 +160,32 @@ AVL::Node* AVL::erase(AVL::Node* p, int key) {
 		}
 	}
 	return balance(p);
+}
+
+AVL::Node* AVL::find(AVL::Node* p, int key) {
+	if (!p) {
+		return NULL;
+	}
+	if (p->key > key) {
+		return find(p->left, key);
+	}
+	if (p->key < key) {
+		return find(p->right, key);
+	}
+	return p;
+}
+
+void AVL::Clear(AVL::Node* node) {
+	if (!node) {
+		return;
+	};
+	Clear(node->left);
+	Clear(node->right);
+	delete node;
+}
+
+int main() {
+	return 0;
 }
 
 AVL::Node* AVL::find(AVL::Node* p, int key) {
